@@ -111,6 +111,7 @@ model libraryReleases {
   releaseShelf             libraryShelves[]
   releaseTracks            libraryTracks[]
   releaseUnavailableReason libraryUnavailableReasons[] @relation(name: "releaseUnavailable")
+  blogReviewWritten        blogReview[]
 }
 
 model libraryShelves {
@@ -147,6 +148,7 @@ model libraryTracks {
   trackRelease           libraryReleases[]
   trackArtist            libraryArtists[]
   trackUnavailableReason libraryUnavailableReasons[] @relation(name: "trackUnavailable")
+  blogPlaylistPlayed     blogPlaylist[]
 }
 
 model libraryUnavailableReasons {
@@ -171,6 +173,7 @@ model radioStationDetails {
   updatedAt                     DateTime @default(now()) @db.Timestamptz(6)
 
   radioStationShowDetails bookedShows[]
+  radioStationSocialMedia socialMedia[]
 }
 
 model availableShows {
@@ -212,6 +215,7 @@ model bookedShows {
   availableShowDetails availableShows[]
   radioStationDetails  radioStationDetails[]
   broadcastType        showTypes[]
+  blogPlaylistForShow  blogPlaylist[]
 }
 
 model userAccounts {
@@ -225,4 +229,65 @@ model userAccounts {
   userAccountSlug          String   @unique @db.VarChar(256)
   createdAt                DateTime @default(now()) @db.Timestamptz(6)
   updatedAt                DateTime @default(now()) @db.Timestamptz(6)
+  writtenBlogPlaylists     blogPlaylist[]
+  writtenBlogReviews       blogReview[]
+  writtenBlogPosts         blogPost[]
+
+}
+
+model blogPlaylist {
+  blogPlaylistId         Int             @id @default(autoincrement())
+  blogPlaylistTitle      String          @db.VarChar(128)
+  blogPlaylistAuthor     userAccounts[]
+  blogPlaylistIntro      String          @db.VarChar(1024)
+  blogPlaylistTags       globalTags[]
+  blogPlaylistForShow    bookedShows[]
+  blogPlaylistTrackId    libraryTracks[]
+  blogPlaylistLinkedPost blogPost[]
+  blogPlaylistSlug       String          @unique @db.VarChar(160)
+  createdAt              DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime        @default(now()) @db.Timestamptz(6)
+}
+
+model blogReview {
+  blogReviewId      Int               @id @default(autoincrement())
+  blogReviewTitle   String            @db.VarChar(128)
+  blogReviewIntro   String            @db.VarChar(1024)
+  blogReviewTags    globalTags[]
+  blogReviewAuthor  userAccounts[]
+  blogReviewRelease libraryReleases[]
+  blogReviewContent String            @db.VarChar(20480)
+  blogReviewSlug    String            @unique @db.VarChar(160)
+  createdAt         DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime          @default(now()) @db.Timestamptz(6)
+}
+
+model blogPost {
+  blogPostId       Int            @id @default(autoincrement())
+  blogPostTitle    String         @db.VarChar(128)
+  blogPostIntro    String         @db.VarChar(1024)
+  blogTags         globalTags[]
+  blogPostAuthor   userAccounts[]
+  blogPostPlaylist blogPlaylist[]
+  blogPostContent  String         @db.VarChar(20480)
+  blogPostSlug     String         @unique @db.VarChar(160)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime       @default(now()) @db.Timestamptz(6)
+}
+
+model globalTags {
+  tags             String         @id @db.VarChar(255)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime       @db.Timestamptz(6)
+  blogPostTags     blogPost[]
+  blogReviewTags   blogReview[]
+  blogPlaylistTags blogPlaylist[]
+}
+
+model socialMedia {
+  socialMediaId       Int                   @id @default(autoincrement())
+  socialMediaPlatform String                @db.VarChar(256)
+  socialMediaLink     String                @db.VarChar(256)
+  socialMediaIcon     String                @db.VarChar(256)
+  socialMediaRadio    radioStationDetails[]
 }
